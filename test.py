@@ -23,21 +23,24 @@ from __future__ import division
 
 from pyorca import Agent, get_avoidance_velocity, orca, normalized, perp
 from numpy import array, rint, linspace, pi, cos, sin
-import pygame
-
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import matplotlib.patches as patches
 import itertools
 import random
 
 N_AGENTS = 8
 RADIUS = 8.
 SPEED = 10
+xsize = 320
+ysize = 240
 
 agents = []
 for i in range(N_AGENTS):
     theta = 2 * pi * i / N_AGENTS
     x = RADIUS * array((cos(theta), sin(theta))) #+ random.uniform(-1, 1)
     vel = normalized(-x) * SPEED
-    pos = (random.uniform(-20, 20), random.uniform(-20, 20))
+    pos = (random.uniform(-xsize, xsize), random.uniform(-ysize, ysize))
     agents.append(Agent(pos, (0., 0.), 1., SPEED, vel))
 
 
@@ -50,31 +53,33 @@ colors = [
     (255, 0, 255),
 ]
 
-pygame.init()
+fig,ax = plt.sunplots()
 
-dim = (640, 480)
-screen = pygame.display.set_mode(dim)
+ax.set_xlim((-320,320))
+ax.set_ylim((-240,240))
+ax.grid(True)
 
-O = array(dim) / 2  # Screen position of origin.
-scale = 6  # Drawing scale.
-
-clock = pygame.time.Clock()
-FPS = 20
+FPS = 30
 dt = 1/FPS
 tau = 5
 
-def draw_agent(agent, color):
-    pygame.draw.circle(screen, color, rint(agent.position * scale + O).astype(int), int(round(agent.radius * scale)), 0)
 
+def draw_agent(agent, color):
+    circle_instant = plt.circle(agent.position,agent.radius,color)
+    ax.add_patch(circle_instant)
+scale = 1
 def draw_orca_circles(a, b):
     for x in linspace(0, tau, 21):
         if x == 0:
             continue
-        pygame.draw.circle(screen, pygame.Color(0, 0, 255), rint((-(a.position - b.position) / x + a.position) * scale + O).astype(int), int(round((a.radius + b.radius) * scale / x)), 1)
+        circle = plt.circle(rint((-(a.position - b.position) / x + a.position) * scale + 0).astype(int), int(round((a.radius + b.radius) * scale / x)),)
+        ax.add_patch(circle)
 
 def draw_velocity(a):
-    pygame.draw.line(screen, pygame.Color(0, 255, 255), rint(a.position * scale + O).astype(int), rint((a.position + a.velocity) * scale + O).astype(int), 1)
-    # pygame.draw.line(screen, pygame.Color(255, 0, 255), rint(a.position * scale + O).astype(int), rint((a.position + a.pref_velocity) * scale + O).astype(int), 1)
+    ax.add_patch(patches.Arrow((rint(a.position * scale + 0).astype(int)),rint((a.position + a.velocity) * scale + 0),width = 1),edgecolor = 'black',
+       linestyle = 'solid', 
+       fill = True,
+       facecolor = 'yellow')
 
 running = True
 accum = 0
@@ -110,12 +115,12 @@ while running:
         # Draw ORCA line
         alpha = agents[0].position + line.point + perp(line.direction) * 100
         beta = agents[0].position + line.point + perp(line.direction) * -100
-        pygame.draw.line(screen, (255, 255, 255), rint(alpha * scale + O).astype(int), rint(beta * scale + O).astype(int), 1)
+        pygame.draw.line(screen, (255, 255, 255), rint(alpha * scale + 0).astype(int), rint(beta * scale + 0).astype(int), 1)
 
         # Draw normal to ORCA line
         gamma = agents[0].position + line.point
         delta = agents[0].position + line.point + line.direction
-        pygame.draw.line(screen, (255, 255, 255), rint(gamma * scale + O).astype(int), rint(delta * scale + O).astype(int), 1)
+        pygame.draw.line(screen, (255, 255, 255), rint(gamma * scale + 0).astype(int), rint(delta * scale + 0).astype(int), 1)
 
     pygame.display.flip()
 

@@ -94,8 +94,8 @@ def get_avoidance_velocity(agent, collider, t, dt):
     # This is what gives the VO its cone shape. The _closest_ velocity disk is
     # at D(-x/tau, r/tau), and this truncates the VO.
 
-    x = -(agent.position - collider.position)
-    v = agent.velocity - collider.velocity
+    x = -(agent.position - collider.position) # Displacement
+    v = agent.velocity - collider.velocity # relative velocities
     r = agent.radius + collider.radius
 
     x_len_sq = norm_sq(x)
@@ -108,9 +108,9 @@ def get_avoidance_velocity(agent, collider, t, dt):
         # projecting onto the sides or the disk, since the sides are not
         # parallel to the displacement. We need to bring it a bit closer. How
         # much closer can be worked out by similar triangles. It works out
-        # that the new point is at x/t cos(theta)^2, where theta is the angle
+        # that the new point is at x/t cos(theta)^2, <- 여기가 질문. where theta is the angle
         # of the aperture (so sin^2(theta) = (r/||x||)^2).
-        adjusted_center = x/t * (1 - (r*r)/x_len_sq)
+        adjusted_center = x/t * (1 - (r*r)/x_len_sq) #  <- 여기가 질문.
 
         if dot(v - adjusted_center, adjusted_center) < 0:
             # v lies in the front part of the cone
@@ -120,7 +120,7 @@ def get_avoidance_velocity(agent, collider, t, dt):
             u = normalized(w) * r/t - w
             n = normalized(w)
         else: # v lies in the rest of the cone
-            # print("sides")
+            # print("sides")R
             # Rotate x in the direction of v, to make it a side of the cone.
             # Then project v onto that, and calculate the difference.
             leg_len = sqrt(x_len_sq - r*r)
@@ -130,13 +130,14 @@ def get_avoidance_velocity(agent, collider, t, dt):
                 ((leg_len, sine),
                 (-sine, leg_len)))
             rotated_x = rot.dot(x) / x_len_sq
-                n = perp(rotated_x)
+            n = perp(rotated_x)
             if sine < 0:
                 # Need to flip the direction of the line to make the
                 # half-plane point out of the cone.
                 n = -n
             # print("rotated_x=%s" % rotated_x)
             u = rotated_x * dot(v, rotated_x) - v
+
             # print("u=%s" % u)
     else:
         # We're already intersecting. Pick the closest velocity to our

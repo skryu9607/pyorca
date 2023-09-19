@@ -116,7 +116,7 @@ def get_avoidance_velocity(agent, collider, t, dt):
             # v lies in the front part of the cone
             # print("front")
             # print("front", adjusted_center, x_len_sq, r, x, t)
-            w = v - x/t
+            w = v - x/t +0 -0
             u = normalized(w) * r/t - w
             n = normalized(w)
         else: # v lies in the rest of the cone
